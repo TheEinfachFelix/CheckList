@@ -7,8 +7,9 @@ __pycache__/
 # C extensions
 *.so
 
-# ignore json
+# ignore
 *.json
+*.DS_Store
 
 # Distribution / packaging
 .Python
