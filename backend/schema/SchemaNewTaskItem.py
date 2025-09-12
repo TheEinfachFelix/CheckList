@@ -2,8 +2,7 @@ from pydantic import BaseModel, Field
 from typing import Optional
 from datetime import date
 
-class SchemaTaskItem(BaseModel):
-    id: str = Field(..., description="The ID of the task")
+class SchemaNewTaskItem(BaseModel):
     title: str = Field(..., description="The title of the task")
     description: str = Field(..., description="The description of the task")
     completed: bool = Field(default=False, description="Whether the task is completed")
