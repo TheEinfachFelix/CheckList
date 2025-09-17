@@ -1,21 +1,17 @@
 import customtkinter as ctk
 
-
 class Badge(ctk.CTkLabel):
     def __init__(self, master, text: str, fg: str, *args, **kwargs):
         super().__init__(master, text=text, corner_radius=8, padx=8, pady=4,
                          fg_color=ctk.ThemeManager.theme["CTkFrame"]["fg_color"],
                          text_color=fg, font=("Inter", 12, "bold"), *args, **kwargs)
         self._accent = fg
-        self._add_border()
-
-    def _add_border(self):
         self.configure(border_width=1, border_color=self._accent)
 
-    def set_text(self, t):
+    def set_text(self, t: str):
         self.configure(text=t)
 
-    def set_color(self, c):
+    def set_color(self, c: str):
         self._accent = c
         self.configure(text_color=c, border_color=c)
 
