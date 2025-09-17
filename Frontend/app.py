@@ -7,6 +7,7 @@ from dialogs import TaskDialog
 from task_item import TaskItem
 from filters import ButtonGroup
 from widgets import Badge, Chip, IconButton
+import requests
 
 APP_NAME = "Checklist Pro"
 
@@ -194,6 +195,7 @@ class App(ctk.CTk):
         TaskDialog(self, task=None, on_submit=self._add_task)
 
     def _add_task(self, t):
+        requests.post("http://127.0.0.1:8000/TaskItem", data=t, timeout=10)
         self.tasks.insert(0, t)
         self._on_task_changed()
 

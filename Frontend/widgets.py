@@ -7,7 +7,6 @@ class Badge(ctk.CTkLabel):
                          fg_color=ctk.ThemeManager.theme["CTkFrame"]["fg_color"],
                          text_color=fg, font=("Inter", 12, "bold"), *args, **kwargs)
         self._accent = fg
-        self._add_border()
 
     def _add_border(self):
         self.configure(border_width=1, border_color=self._accent)
