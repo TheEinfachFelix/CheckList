@@ -16,10 +16,9 @@ class TaskForm(ctk.CTkToplevel):
 
         # Fields
         self.title_var = ctk.StringVar(value=task.title if task else "")
-        self.desc_var = ctk.StringVar(value=task.description if task else "")
         self.completed_var = ctk.BooleanVar(value=task.completed if task else False)
         self.tags_var = ctk.StringVar(value=", ".join(task.tags) if (task and task.tags) else "")
-        self.prio_var = ctk.IntVar(value=task.prio if task else -1)
+        self.prio_var = ctk.StringVar(value=str(task.prio) if task else "")
         self.due_var = ctk.StringVar(value=task.due_date if (task and task.due_date) else "")
 
         form = ctk.CTkFrame(self)
@@ -36,13 +35,14 @@ class TaskForm(ctk.CTkToplevel):
             self.desc_entry.insert("0.0", self.task.description)
 
         ctk.CTkLabel(form, text="Completed").grid(row=2, column=0, sticky="w")
-        ctk.CTkCheckBox(form, variable=self.completed_var).grid(row=2, column=1, sticky="w", padx=8)
+        ctk.CTkSwitch(form, variable=self.completed_var, text="").grid(row=2, column=1, sticky="w", padx=8)
 
         ctk.CTkLabel(form, text="Tags (comma separated)").grid(row=3, column=0, sticky="w")
         ctk.CTkEntry(form, textvariable=self.tags_var).grid(row=3, column=1, sticky="ew", padx=8, pady=4)
 
         ctk.CTkLabel(form, text="Priority").grid(row=4, column=0, sticky="w")
-        ctk.CTkEntry(form, textvariable=self.prio_var).grid(row=4, column=1, sticky="w", padx=8, pady=4)
+        self.prio_entry = ctk.CTkEntry(form, textvariable=self.prio_var)
+        self.prio_entry.grid(row=4, column=1, sticky="w", padx=8, pady=4)
 
         ctk.CTkLabel(form, text="Due date (YYYY-MM-DD)").grid(row=5, column=0, sticky="w")
         ctk.CTkEntry(form, textvariable=self.due_var).grid(row=5, column=1, sticky="w", padx=8, pady=4)
@@ -54,7 +54,6 @@ class TaskForm(ctk.CTkToplevel):
         ctk.CTkButton(btn_frame, text=save_text, command=self.save).pack(side="left", padx=6)
         ctk.CTkButton(btn_frame, text="Cancel", command=self.destroy).pack(side="left", padx=6)
 
-        # make columns resize nicely
         form.grid_columnconfigure(1, weight=1)
 
     def parse_due(self, s: str):
@@ -71,10 +70,10 @@ class TaskForm(ctk.CTkToplevel):
         description = self.desc_entry.get("0.0", "end").strip()
         completed = self.completed_var.get()
         tags = [t.strip() for t in self.tags_var.get().split(",") if t.strip()]
-        try:
-            prio = int(self.prio_var.get())
-        except Exception:
-            prio = -1
+
+        prio_text = self.prio_var.get().strip()
+        prio = int(prio_text) if prio_text.isdigit() else -1
+
         try:
             due = self.parse_due(self.due_var.get())
         except Exception:
@@ -96,7 +95,7 @@ class TaskForm(ctk.CTkToplevel):
                 due_date=due,
             )
             try:
-                updated = self.api.update_task(payload)
+                self.api.update_task(payload)
                 messagebox.showinfo("Success", "Task updated")
                 if self.on_done:
                     self.on_done(True)
@@ -113,7 +112,7 @@ class TaskForm(ctk.CTkToplevel):
                 due_date=due,
             )
             try:
-                created = self.api.create_task(payload)
+                self.api.create_task(payload)
                 messagebox.showinfo("Success", "Task created")
                 if self.on_done:
                     self.on_done(True)

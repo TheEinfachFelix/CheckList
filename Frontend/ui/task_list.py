@@ -2,8 +2,7 @@
 import customtkinter as ctk
 from tkinter import messagebox
 from .task_form import TaskForm
-from models import SchemaTaskItem, SchemaNewTaskItem
-from datetime import date
+from models import SchemaTaskItem
 from typing import List
 
 class TaskListFrame(ctk.CTkFrame):
@@ -32,23 +31,22 @@ class TaskListFrame(ctk.CTkFrame):
         list_frame = ctk.CTkFrame(self)
         list_frame.pack(fill="both", expand=True, padx=6, pady=(0,6))
 
-        self.task_listbox = ctk.CTkTextbox(list_frame, width=400, wrap="word")
-        self.task_listbox.pack(side="left", fill="both", expand=True, padx=(0,6))
+        # nutze Treeview-artige Tabelle
+        self.task_listbox = ctk.CTkTextbox(list_frame, wrap="none")
+        self.task_listbox.pack(fill="both", expand=True, padx=6, pady=6)
         self.task_listbox.configure(state="disabled")
 
-        # simple selection via index input because CTk doesn't have a listbox styled heavily; keep simple
-        right_frame = ctk.CTkFrame(list_frame, width=200)
-        right_frame.pack(side="left", fill="y")
+        # Auswahlfeld für Task-ID
+        bottom_frame = ctk.CTkFrame(self)
+        bottom_frame.pack(fill="x", padx=6, pady=6)
 
         self.selected_id_var = ctk.StringVar()
-        ctk.CTkLabel(right_frame, text="Selected ID:").pack(pady=(8,0))
-        self.selected_entry = ctk.CTkEntry(right_frame, textvariable=self.selected_id_var)
-        self.selected_entry.pack(pady=(0,8), padx=6, fill="x")
+        ctk.CTkLabel(bottom_frame, text="Selected ID:").pack(side="left", padx=(0,6))
+        self.selected_entry = ctk.CTkEntry(bottom_frame, textvariable=self.selected_id_var, width=300)
+        self.selected_entry.pack(side="left", padx=(0,6))
 
-        # Details
-        ctk.CTkLabel(right_frame, text="Filters / Quick Actions:").pack(pady=(8,4))
         self.show_completed_var = ctk.BooleanVar(value=True)
-        ctk.CTkCheckBox(right_frame, text="Show completed", variable=self.show_completed_var, command=self.render_tasks).pack()
+        ctk.CTkCheckBox(bottom_frame, text="Show completed", variable=self.show_completed_var, command=self.render_tasks).pack(side="left", padx=6)
 
         # initial load
         self.refresh()
@@ -63,13 +61,19 @@ class TaskListFrame(ctk.CTkFrame):
     def render_tasks(self):
         self.task_listbox.configure(state="normal")
         self.task_listbox.delete("1.0", "end")
+
+        header = f"{'ID':<24} | {'Title':<20} | {'Prio':<4} | {'Due':<12} | {'Completed':<9} | Tags\n"
+        self.task_listbox.insert("end", header)
+        self.task_listbox.insert("end", "-"*90 + "\n")
+
         for t in self.tasks:
             if not self.show_completed_var.get() and t.completed:
                 continue
             due = t.due_date if t.due_date else "-"
             tags = ", ".join(t.tags or [])
-            self.task_listbox.insert("end",
-                                     f"ID: {t.id}\nTitle: {t.title}\nDesc: {t.description}\nCompleted: {t.completed}\nPrio: {t.prio}\nDue: {due}\nTags: {tags}\n---\n")
+            row = f"{t.id:<24} | {t.title:<20} | {t.prio:<4} | {due:<12} | {str(t.completed):<9} | {tags}\n"
+            self.task_listbox.insert("end", row)
+
         self.task_listbox.configure(state="disabled")
 
     def new_task(self):
