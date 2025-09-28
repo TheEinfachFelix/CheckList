@@ -195,16 +195,14 @@ class App(ctk.CTk):
         TaskDialog(self, task=None, on_submit=self._add_task)
 
     def _add_task(self, t):
-        requests.post("http://127.0.0.1:8000/TaskItem", data=t, timeout=10)
+        requests.post("http://127.0.0.1:8000/TaskItem", json=t, timeout=10)
         self.tasks.insert(0, t)
         self._on_task_changed()
 
     def _edit_task(self, t):
         def _apply(updated):
-            for i, x in enumerate(self.tasks):
-                if x["id"] == updated["id"]:
-                    self.tasks[i] = updated
-                    break
+            print(updated)
+            requests.put("http://127.0.0.1:8000/TaskItem", json=updated, timeout=10)
             self._on_task_changed()
         TaskDialog(self, task=dict(t), on_submit=_apply)
 
