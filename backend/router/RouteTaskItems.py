@@ -40,11 +40,13 @@ async def read_TaskItem(item_id: str) -> SchemaTaskItem | None:
 @router.post("/TaskItem/", tags=["TaskItems"])
 async def create_TaskItem(item: SchemaNewTaskItem) -> SchemaTaskItem:
     new_task = item.model_dump()
+    print(f"New_task= {new_task}")
     # Datum in String umwandeln, falls vorhanden
     if new_task.get("due_date"):
         new_task["due_date"] = new_task["due_date"].isoformat()
     result = await task_collection.insert_one(new_task)
     created_task = await task_collection.find_one({"_id": result.inserted_id})
+    print(f"Inserted_id= {result.inserted_id}")
     return task_helper(created_task)
 
 @router.put("/TaskItem/", tags=["TaskItems"])

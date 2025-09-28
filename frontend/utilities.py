@@ -86,10 +86,10 @@ def new_task_template() -> dict:
     return {
         "id": str(uuid.uuid4()),
         "title": "",
-        "desc": "",
-        "due": None,          # YYYY-MM-DD
-        "priority": "mittel",  # niedrig | mittel | hoch
-        "tags": [],
+        "description": "",
         "completed": False,
+        "tags": [],
+        "priority": "mittel", # niedrig | mittel | hoch
+        "due_date": None,          # YYYY-MM-DD  
         "created_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S"),
     }

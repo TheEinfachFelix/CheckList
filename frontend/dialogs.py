@@ -10,7 +10,7 @@ class TaskDialog(ctk.CTkToplevel):
         super().__init__(master)
         self.title("Aufgabe bearbeiten" if task else "Neue Aufgabe")
         self.geometry("520x520")
-        self.resizable(False, False)
+        self.wait_visibility()
         self.grab_set()
         self.focus()
 
@@ -91,11 +91,11 @@ class TaskDialog(ctk.CTkToplevel):
 
         self.task.update({
             "title": title,
-            "desc": self.desc_txt.get("1.0", "end").strip(),
-            "due": due_text or None,
-            "priority": self.prio.get(),
-            "tags": tags,
+            "description": self.desc_txt.get("1.0", "end").strip(),
             "completed": bool(self.done_var.get()),
+            "tags": tags,
+            "priority": self.prio.get(),
+            "due_date": due_text or None,
         })
         if self.on_submit:
             self.on_submit(self.task)
