@@ -1,10 +1,8 @@
-import uuid
 from datetime import datetime
 
 
 def new_task_template():
     return {
-        "id": str(uuid.uuid4()),
         "title": "",
         "desc": "",
         "due": None,

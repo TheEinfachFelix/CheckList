@@ -1,7 +1,6 @@
 import json
 from datetime import datetime, date
 from pathlib import Path
-import uuid
 
 DATA_FILE = Path("tasks.json")
 DATE_FMT = "%Y-%m-%d"
@@ -64,27 +63,9 @@ def ensure_data_file() -> None:
         DATA_FILE.write_text(json.dumps(
             {"tasks": []}, indent=2), encoding="utf-8")
 
-
-def load_tasks() -> list:
-    """Loads tasks from the data file."""
-    ensure_data_file()
-    try:
-        data = json.loads(DATA_FILE.read_text(encoding="utf-8"))
-        return data.get("tasks", [])
-    except json.JSONDecodeError:
-        return []
-
-
-def save_tasks(tasks: list) -> None:
-    """Saves tasks to the data file."""
-    DATA_FILE.write_text(json.dumps(
-        {"tasks": tasks}, indent=2, ensure_ascii=False), encoding="utf-8")
-
-
 def new_task_template() -> dict:
     """Generates a new task template."""
     return {
-        "id": str(uuid.uuid4()),
         "title": "",
         "description": "",
         "completed": False,

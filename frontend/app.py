@@ -2,11 +2,10 @@ import customtkinter as ctk
 import tkinter as tk
 from tkinter import messagebox
 from datetime import date
-from utilities import load_tasks, save_tasks, parse_date
+from utilities import parse_date
 from dialogs import TaskDialog
 from task_item import TaskItem
 from filters import ButtonGroup
-from widgets import Badge, Chip, IconButton
 import requests
 
 APP_NAME = "Checklist Pro"
@@ -24,7 +23,6 @@ class App(ctk.CTk):
         ctk.set_default_color_theme("blue")
 
         # DATA
-        self.tasks = load_tasks()
         self.filtered = []
         self.active_filter = "Alle"
         self.tag_filter = None
@@ -47,6 +45,7 @@ class App(ctk.CTk):
         self.bind_all("<Delete>", lambda e: self._delete_selected())
         self.bind_all("<Control-s>", lambda e: self._save())
 
+        self.fetch_tasks()
         self.refresh()
 
     # ----- UI Sections -----
@@ -186,34 +185,55 @@ class App(ctk.CTk):
     def _delete_selected(self):
         pass
 
-    def _save(self):
-        save_tasks(self.tasks)
-        self.status_lbl.configure(text="Gespeichert")
-        self.after(1200, lambda: self.status_lbl.configure(text="Bereit"))
-
     def open_new_task(self):
         TaskDialog(self, task=None, on_submit=self._add_task)
 
     def _add_task(self, t):
-        requests.post("http://127.0.0.1:8000/TaskItem", json=t, timeout=10)
-        self.tasks.insert(0, t)
-        self._on_task_changed()
+        try:
+            resp = requests.post("http://127.0.0.1:8000/TaskItem/", json=t, timeout=10)
+            resp.raise_for_status()
+            self.fetch_tasks()
+            self._on_task_changed()
+        except Exception as e:
+            messagebox.showerror(APP_NAME, f"Fehler beim Hinzufügen: {e}")
 
     def _edit_task(self, t):
+        self.fetch_tasks()
+        latest = next((task for task in self.tasks if task.get("id") == t.get("id")), t)
         def _apply(updated):
-            print(updated)
-            requests.put("http://127.0.0.1:8000/TaskItem", json=updated, timeout=10)
-            self._on_task_changed()
-        TaskDialog(self, task=dict(t), on_submit=_apply)
+            try:
+                requests.put("http://127.0.0.1:8000/TaskItem/", json=updated, timeout=10)
+                self.fetch_tasks()
+                self._on_task_changed()
+            except Exception as e:
+                messagebox.showerror(APP_NAME, f"Fehler beim Bearbeiten: {e}")
+        TaskDialog(self, task=dict(latest), on_submit=_apply)
+
 
     def _delete_task(self, t):
         if messagebox.askyesno(APP_NAME, f"Aufgabe ‘{t.get('title') or 'Ohne Titel'}’ löschen?"):
-            self.tasks = [x for x in self.tasks if x["id"] != t["id"]]
+            try:
+                requests.delete(f"http://127.0.0.1:8000/TaskItem/{t['id']}", timeout=10)
+                self.fetch_tasks()
+                self._on_task_changed()
+            except Exception as e:
+                messagebox.showerror(APP_NAME, f"Fehler beim Löschen: {e}")
+
+    def fetch_tasks(self):
+        self.tasks = []
+        try:
+            resp = requests.get("http://127.0.0.1:8000/TaskItems/", timeout=10)
+            resp.raise_for_status()
+            tasks = resp.json()
+        except Exception as e:
+            messagebox.showerror(APP_NAME, f"Fehler beim Laden der Aufgaben: {e}")
+        
+        for t in tasks:
+            self.tasks.insert(0, t)
             self._on_task_changed()
 
     def _on_task_changed(self):
         self.refresh()
-        save_tasks(self.tasks)
 
     # ----- Filtering & sorting -----
 
