@@ -1,7 +1,7 @@
 import requests
 from models.task import Task
 
-API_URL = "http://127.0.0.1:8000"  # deine FastAPI-URL
+API_URL = "http://127.0.0.1:8000"
 
 def get_tasks() -> list[Task]:
     response = requests.get(f"{API_URL}/TaskItems/")
@@ -21,7 +21,7 @@ def toggle_task(task: Task) -> Task:
     return Task(**response.json())
 
 def update_task(task: Task) -> Task:
-    response = requests.put(f"{API_URL}/TaskItem/", json=task.__dict__)
+    response = requests.put(f"{API_URL}/TaskItem/", json=task)
     response.raise_for_status()
     return Task(**response.json())
 
