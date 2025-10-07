@@ -8,6 +8,9 @@ class TaskTable(ctk.CTkFrame):
         self.on_edit = on_edit
         self.headers = ["Titel", "Beschreibung", "Fällig", "Priorität", "Status", "Aktionen"]
         self.rows = []
+        self.all_tasks = []
+        self.priority_filter = None
+        self.search_filter = None
         self.draw_headers()
 
     def draw_headers(self):
@@ -21,8 +24,31 @@ class TaskTable(ctk.CTkFrame):
                 widget.destroy()
         self.rows.clear()
 
-        tasks = api_client.get_tasks()
-        for i, task in enumerate(tasks, start=1):
+        self.all_tasks = api_client.get_tasks()
+        self.apply_filters()
+
+    def apply_filters(self, priority=None, search_text=None):
+        self.priority_filter = priority
+        self.search_filter = search_text
+        
+        filtered_tasks = self.all_tasks
+
+        if self.priority_filter:
+            filtered_tasks = [t for t in filtered_tasks if t.prio == self.priority_filter]
+
+        if self.search_filter:
+            filtered_tasks = [t for t in filtered_tasks 
+                            if self.search_filter in t.title.lower() 
+                            or self.search_filter in t.description.lower()]
+
+        # Clear existing rows
+        for row in self.rows:
+            for widget in row:
+                widget.destroy()
+        self.rows.clear()
+
+        # Add filtered tasks
+        for i, task in enumerate(filtered_tasks, start=1):
             self.add_task_row(i, task)
 
     def add_task_row(self, row, task: Task):

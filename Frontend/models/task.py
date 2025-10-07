@@ -9,5 +9,5 @@ class Task:
     description: str
     completed: bool = False
     tags: list[str] = None
-    prio: Optional[int] = -1
+    prio: Optional[str] = "niedrig"
     due_date: Optional[str] = None
