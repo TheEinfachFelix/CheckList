@@ -19,7 +19,7 @@ def task_helper(task) -> SchemaTaskItem:
         description=task.get("description", ""),
         completed=task.get("completed", False),
         tags=task.get("tags", []),
-        prio=task.get("prio", -1),
+        prio=task.get("prio", "niedrig"),
         due_date=task.get("due_date", None),
     )
 
@@ -40,9 +40,6 @@ async def read_TaskItem(item_id: str) -> SchemaTaskItem | None:
 @router.post("/TaskItem/", tags=["TaskItems"])
 async def create_TaskItem(item: SchemaNewTaskItem) -> SchemaTaskItem:
     new_task = item.model_dump()
-    # Datum in String umwandeln, falls vorhanden
-    if new_task.get("due_date"):
-        new_task["due_date"] = new_task["due_date"].isoformat()
     result = await task_collection.insert_one(new_task)
     created_task = await task_collection.find_one({"_id": result.inserted_id})
     return task_helper(created_task)
@@ -50,9 +47,6 @@ async def create_TaskItem(item: SchemaNewTaskItem) -> SchemaTaskItem:
 @router.put("/TaskItem/", tags=["TaskItems"])
 async def update_TaskItem(item: SchemaTaskItem) -> SchemaTaskItem | None:
     update_data = item.model_dump()
-    # Datum in String umwandeln, falls vorhanden
-    if update_data.get("due_date") and hasattr(update_data["due_date"], "isoformat"):
-        update_data["due_date"] = update_data["due_date"].isoformat()
     updated = await task_collection.update_one(
         {"_id": ObjectId(item.id)},
         {"$set": update_data}
